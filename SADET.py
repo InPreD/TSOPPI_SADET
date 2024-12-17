@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Extract sample data of specified patients (from LocalApp or TSOPPI output directories)."""
 import argparse
 from datetime import datetime
@@ -685,6 +686,7 @@ def main():
     # - md5sum is run on regular files only (not directories)
     if (selected_file_count > 0):
         with open(outfile_script_path_cont, "w") as esp_outfile:
+            esp_outfile.write("#!/bin/bash\n")
             esp_outfile.write("# packaging and encryption of selected files\n")
             esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
             esp_outfile.write("tar -C " + outfile_dir_parent_path + " -T " + outfile_file_path_list + " -c"
