@@ -7,3 +7,5 @@ COPY SADET.py /inpred
 # initialize the necessary gpg directories
 RUN echo "GPG init" | gpg -c --passphrase "init" --batch --cipher-algo aes256 -o /inpred/resources/data.init.gpg
 RUN rm /inpred/resources/data.init.gpg
+# Add SADET.py to PATH
+ENV PATH=$PATH:/inpred
