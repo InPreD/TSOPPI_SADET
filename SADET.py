@@ -546,12 +546,11 @@ def main():
                 TSOPPI_samplelist_path = "/sample_list.tsv"
                 TSOPPI_samplelist_list = glob.glob(L1_path + TSOPPI_samplelist_path)
 
-                (e_code, e_message) = TSF.check_file_list_size(TSOPPI_samplelist_list, "sample list file", input_dir_hs_path + TSOPPI_samplelist_path, 22)
-                if (e_code != 0):
-                    logging.error(e_message)
-                    exit(e_code)
+                if (len(TSOPPI_samplelist_list) != 1):
+                    logging.warning(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
+                    continue
                 else:
-                    logging.info(e_message)
+                    logging.info(" - File \"sample_list.tsv\" found, it's content will be checked for eligible samples.")
 
                 # read in and process the sample list file
                 header_read = False
