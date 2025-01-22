@@ -356,7 +356,7 @@ def main():
             if (ECO_stdout_line_list == ['']):
                 logging.info("Found zero error lines in the LocalApp logs.")
             else:
-                logging.info("Found " + len(ECO_stdout_line_list) + " error lines in the LocalApp logs." 
+                logging.info("Found " + str(len(ECO_stdout_line_list)) + " error lines in the LocalApp logs." 
                             " A copy of the error lines will be written into the inherited errors output file.")
                 with open(inherited_error_list_cont, "w") as iel_outfile:
                     for error_line in ECO_stdout_line_list:
