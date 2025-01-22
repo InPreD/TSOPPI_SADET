@@ -550,7 +550,7 @@ def main():
                     logging.warning(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
                     continue
                 else:
-                    logging.info(" - File \"sample_list.tsv\" found, it's content will be checked for eligible samples.")
+                    logging.info(" - File \"sample_list.tsv\" found, its content will be checked for eligible samples.")
 
                 # read in and process the sample list file
                 header_read = False
