@@ -542,15 +542,14 @@ def main():
             if Path(L1_path).is_dir():
                 logging.info("Checking sub-directory \"" + str(Path(L1_path).name) + "\" for sample extraction eligibility...")
 
-                # check that there is exactly one "sample_list.tsv" file present
-                TSOPPI_samplelist_path = "/sample_list.tsv"
-                TSOPPI_samplelist_list = glob.glob(L1_path + TSOPPI_samplelist_path)
+                # skip directories not containing file "sample_list.tsv"
+                sample_list_file_path = L1_path + "/sample_list.tsv"
 
-                if (len(TSOPPI_samplelist_list) != 1):
+                if not Path(sample_list_file_path).is_file():
                     logging.warning(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
                     continue
-                else:
-                    logging.info(" - File \"sample_list.tsv\" found, its content will be checked for eligible samples.")
+                
+                logging.info(" - File \"sample_list.tsv\" found, its content will be checked for eligible samples.")
 
                 # read in and process the sample list file
                 header_read = False
@@ -560,8 +559,8 @@ def main():
                 eligible_sample_dict = {}
                 sample_count = 0    # number of samples on the sample list
 
-                with open(TSOPPI_samplelist_list[0], "r") as tsl_infile:
-                    for line in tsl_infile:
+                with open(sample_list_file_path, "r") as sl_infile:
+                    for line in sl_infile:
 
                         line_s = line.strip().split("\t")
 
