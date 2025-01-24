@@ -1,5 +1,10 @@
-FROM python:3.14.0a2
-
+FROM python:3.14.0a2-slim
+# install dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gnupg=2.2.40-1.1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 # copy all resource files and create a dedicated runtime data directory
 RUN mkdir -p /inpred/data
 COPY resources /inpred/resources
