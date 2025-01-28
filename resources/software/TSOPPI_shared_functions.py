@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 
 def get_SADET_version():
-    return("0.1.0:2024-12-08")
+    return("0.1.1:2025-01-22")
 
 
 def get_path_prefix_error_message(file_description: str,
@@ -58,10 +58,10 @@ def check_file_list_size(file_list: List[str], file_type: str, file_path_pattern
     return_message = 0
 
     if (len(file_list) == 0):
-        return_message = " - No " + file_type + " found at the expected location (\"" + file_path_pattern + "\"). Single file. Exiting."
+        return_message = " - No " + file_type + " found at the expected location (\"" + file_path_pattern + "\"). Exiting."
         return_value = error_code
     elif (len(file_list) > 1):
-        return_message = " - Multiple " + file_type + "s found at the expected location (\"" + file_path_pattern + "\"). Single file. Exiting."
+        return_message = " - Multiple " + file_type + "s found at the expected location (\"" + file_path_pattern + "\"). Exiting."
         return_value = error_code
     else:
         return_message = " - The following " + file_type + " will be utilized: \"" + file_list[0] + "\"."
