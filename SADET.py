@@ -704,7 +704,7 @@ def main():
             else:
                 esp_outfile.write("# file-level md5sum creation\n")
                 esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
-                esp_outfile.write("cat {} | while read path_line; do if [ -f ${path_line} ]; then md5sum ${path_line}; fi; done > {} {}\n".format(
+                esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {} {}\n".format(
                                   outfile_file_path_list, outfile_file_level_md5_path, parallel_sign))
                 esp_outfile.write("cd - > /dev/null\n")
             if parallel_export_and_md5sum:
