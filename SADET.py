@@ -689,23 +689,23 @@ def main():
     # - md5sum is run on regular files only (not directories)
     if (selected_file_count > 0):
         with open(outfile_script_path_cont, "w") as esp_outfile:
-            parallel_sign = ""
+            optional_ampersand = ""
             if parallel_export_and_md5sum:
-                parallel_sign = "&"
+                optional_ampersand = " &"
 
             esp_outfile.write("#!/bin/bash\n")
             esp_outfile.write("# packaging and encryption of selected files\n")
             esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
-            esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {} {}\n".format(
-                              outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, parallel_sign))
+            esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
+                              outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
                 esp_outfile.write("# archive-level md5sum creation\n")
-                esp_outfile.write("md5sum {} > {} {}\n".format(outfile_archive_path, outfile_archive_level_md5_path, parallel_sign))
+                esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
                 esp_outfile.write("# file-level md5sum creation\n")
                 esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
-                esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {} {}\n".format(
-                                  outfile_file_path_list, outfile_file_level_md5_path, parallel_sign))
+                esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
+                                  outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
