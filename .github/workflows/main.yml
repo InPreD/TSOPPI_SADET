@@ -1,0 +1,45 @@
+name: Docker Build
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*.*.*'
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - 
+        name: Check out the repo
+        uses: actions/checkout@v4
+      -
+        name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+      - 
+        name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            inpred/sadet
+          tags: |
+            latest
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - 
+        name: Login to Dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Build and push image to Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
