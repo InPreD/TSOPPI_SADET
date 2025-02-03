@@ -89,6 +89,9 @@ def main():
                             action="store_true",
                             help="Only generate a script for the required data export (encryption and packaging),"
                                 " do not run the script. (disabled by default)")
+    arg_parser.add_argument("--parallel_export_and_md5sum",
+                            action="store_true",
+                            help="Run gpg/tar and md5sum in parallel. (disabled by default)")    
     arg_parser.add_argument("--require_inpred_nomenclature",
                             action="store_true",
                             help="Require that all input IDs are compatible with the InPreD sample nomenclature. (disabled by default)")
@@ -119,6 +122,7 @@ def main():
     output_file_prefix = arg_dict["output_file_prefix"]
     input_type = arg_dict["input_type"]
     generate_export_script_only = arg_dict["generate_export_script_only"]
+    parallel_export_and_md5sum = arg_dict["parallel_export_and_md5sum"]
     require_inpred_nomenclature = arg_dict["require_inpred_nomenclature"]
     archive_level_md5sum = arg_dict["archive_level_md5sum"]
     rewrite_output = arg_dict["rewrite_output"]
@@ -260,6 +264,7 @@ def main():
         - create archive-level md5sum file: """ + str(archive_level_md5sum) + """
         - require InPreD sample ID nomenclature: """ + str(require_inpred_nomenclature) + """
         - skip extraction script execution: """ + str(generate_export_script_only) + """
+        - run gpg/tar and md5sum in parallel: """ + str(parallel_export_and_md5sum) + """
         - output directory ([host system]/[container]): ["""
         + output_dir_hs_path + "]/["
         + output_dir_cont_path + "]" + """
@@ -684,20 +689,26 @@ def main():
     # - md5sum is run on regular files only (not directories)
     if (selected_file_count > 0):
         with open(outfile_script_path_cont, "w") as esp_outfile:
+            optional_ampersand = ""
+            if parallel_export_and_md5sum:
+                optional_ampersand = " &"
+
             esp_outfile.write("#!/bin/bash\n")
             esp_outfile.write("# packaging and encryption of selected files\n")
             esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
-            esp_outfile.write("tar -C " + outfile_dir_parent_path + " -T " + outfile_file_path_list + " -c"
-                            " | gpg -c --passphrase-file " + outfile_password_path + " --batch --cipher-algo aes256 -o " + outfile_archive_path +"\n")
+            esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
+                              outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
                 esp_outfile.write("# archive-level md5sum creation\n")
-                esp_outfile.write("md5sum " + outfile_archive_path + " > " + outfile_archive_level_md5_path + "\n")
+                esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
                 esp_outfile.write("# file-level md5sum creation\n")
                 esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
-                esp_outfile.write("cat " + outfile_file_path_list + " | while read path_line; do if [ -f ${path_line} ]; then md5sum ${path_line}; fi; done > "
-                            + outfile_file_level_md5_path + "\n")
+                esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
+                                  outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
+            if parallel_export_and_md5sum:
+                esp_outfile.write("wait\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
