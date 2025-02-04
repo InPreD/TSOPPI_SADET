@@ -14,8 +14,14 @@ jobs:
       - 
         name: check username
         env:
-          DUSER: ${{ secrets.DOCKERHUB_USER }}
-        if:  ${{ env.super_secret == '' }}
+          DUSER: ${{ secrets.DOCKERHUB_USERNAME }}
+        if:  ${{ env.DUSER == '' }}
+        run: echo "does not exist"
+      -
+        name: check username
+        env:
+          DUSER: thisisnotempty
+        if:  ${{ env.DUSER == '' }}
         run: echo "does not exist"
       -
         name: Check out the repo
