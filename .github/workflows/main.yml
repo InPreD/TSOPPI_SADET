@@ -15,7 +15,8 @@ jobs:
         name: check username
         env:
           DUSER: ${{ secrets.DOCKERHUB_USERNAME }}
-        run: echo $DUSER
+        if:  ${{ env.super_secret == '' }}
+        run: echo "does not exist"
       -
         name: Check out the repo
         uses: actions/checkout@v4
