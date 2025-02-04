@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - 
+        name: check username
+        env:
+          DUSER: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: echo $DUSER
+      -
         name: Check out the repo
         uses: actions/checkout@v4
       -
