@@ -12,14 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - 
-        name: check user
+        name: check token
         env:
-          DUSER: ${{ secrets.DOCKERHUB_USER }}
+          DUSER: ${{ secrets.DOCKERHUB_TOKEN }}
         if:  ${{ env.DUSER == '' }}
-        run: echo "hello"
-      - 
-        name: check testvar
-        if:  ${{ env.TESTVAR == '' }}
         run: echo "hello"
       -
         name: Check out the repo
