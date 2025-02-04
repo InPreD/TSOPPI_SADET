@@ -11,12 +11,6 @@ jobs:
     name: Build Image
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: check token
-        env:
-          DUSER: ${{ secrets.DOCKERHUB_TOKEN }}
-        if:  ${{ env.DUSER == '' }}
-        run: echo "hello"
       -
         name: Check out the repo
         uses: actions/checkout@v4
