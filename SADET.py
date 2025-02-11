@@ -702,24 +702,26 @@ def main():
                 optional_ampersand = " &"
 
             esp_outfile.write("#!/bin/bash\n")
-            esp_outfile.write("# set up copying of all stdout and stderr output into dedicated log files\n")
+            esp_outfile.write("date\n")
+            esp_outfile.write("echo \"setting up dedicated stdout and stderr log files..\"\n")
             esp_outfile.write("exec >  >(tee -i {})\n".format(outfile_script_stdout_log_path))
             esp_outfile.write("exec 2> >(tee -i {} >&2)\n".format(outfile_script_stderr_log_path))
-            esp_outfile.write("# packaging and encryption of selected files\n")
+            esp_outfile.write("echo \"packaging and encrypting selected files..\"\n")
             esp_outfile.write("if [ -f {0} ]; then rm {0} ; fi\n".format(outfile_archive_path))
             esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
                               outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
-                esp_outfile.write("# archive-level md5sum creation\n")
+                esp_outfile.write("echo \"creating archive-level md5 checksums..\"\n")
                 esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
-                esp_outfile.write("# file-level md5sum creation\n")
+                esp_outfile.write("echo \"creating file-level md5 checksums..\"\n")
                 esp_outfile.write("cd {}\n".format(outfile_dir_parent_path))
                 esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
                                   outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
+            esp_outfile.write("date\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
