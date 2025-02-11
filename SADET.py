@@ -129,12 +129,17 @@ def main():
     #variant_summary_file_pattern = arg_dict["variant_summary_file_pattern"]
 
     # set up logging
-    logging.basicConfig(
-        level = logging.INFO,
-        format = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s",
-        datefmt = "%Y-%m-%d_%H:%M:%S",
-        #filemode = "w",
-        handlers = [logging.StreamHandler(sys.stdout)])
+    sadet_logger = logging.getLogger()
+    sadet_logger.setLevel(logging.INFO)
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    file_handler = logging.FileHandler(outfile_log_cont, mode = "w")
+
+    logging_formatter = logging.Formatter(fmt = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s", datefmt = "%Y-%m-%d_%H:%M:%S")
+    file_handler.setFormatter(logging_formatter)
+    stdout_handler.setFormatter(logging_formatter)
+
+    sadet_logger.addHandler(stdout_handler)
 
     # if no output file prefix is set by the user, set a date-based one
     if output_file_prefix is None:
@@ -252,7 +257,7 @@ def main():
             exit(0)
 
     # save a copy of log messages into a file
-    logging.root.addHandler(logging.FileHandler(outfile_log_cont))
+    sadet_logger.addHandler(file_handler)
 
     # output parameter setting information
     logging.info("TSOPPI: SAmple Data Extraction Tool, version "
