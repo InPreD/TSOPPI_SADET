@@ -524,14 +524,14 @@ def main():
                                     + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
 
         # go through the LocalApp path patterns for sample-wise files
-        for file_pattern_type in ["sample_DNA", "sample_RNA", "sample_DNA_bcl", "sample_RNA_bcl",
-                                  "sample_DNA_SPD", "sample_DNA_SPE", "sample_RNA_SPD", "sample_RNA_SPE"]:
+        for file_pattern_type in ["sample_DNA", "sample_DNA_bcl", "sample_DNA_SPD", "sample_DNA_SPE",
+                                  "sample_RNA", "sample_RNA_bcl", "sample_RNA_SPD", "sample_RNA_SPE"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
             if ((file_pattern_type in ["sample_DNA_bcl", "sample_RNA_bcl"]) and (not from_BCL)):
                 continue
             # process DNA- and RNA- specific path patterns in turn
             XNA_sample_list = DNA_sample_list
-            if (file_pattern_type in ["sample_RNA", "sample_RNA_bcl"]):
+            if (file_pattern_type in ["sample_RNA", "sample_RNA_bcl", "sample_RNA_SPD", "sample_RNA_SPE"]):
                 XNA_sample_list = RNA_sample_list
             for sample_id in XNA_sample_list:
                 pair_id = XNA_sample_list[sample_id]["pair_id"]
