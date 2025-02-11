@@ -321,10 +321,24 @@ def main():
     # load the extraction path patterns
     extraction_path_patterns_file = "/inpred/resources/data/extraction_path_patterns.tsv"
     # path patterns for files that should be extracted, broken down into sub-categories
-    extraction_patterns = {"general_all": {}, "general_bcl": {}, "sample_DNA": {}, "sample_RNA": {},
-                           "sample_DNA_bcl": {}, "sample_RNA_bcl": {},
-                           "T_general": {}, "T_any_DNA": {}, "T_DNA_tumor_plus": {},
-                           "T_DNA_tumor": {}, "T_DNA_normal": {}, "T_RNA_tumor": {}, "T_DNA_tumor_RNA_tumor": {}}
+    extraction_patterns = {"general_all": {}, # [LocalApp] files related to the whole LocalApp run, not individual samples (e.g., overall analysis logs and metrics)
+                           "general_bcl": {}, # [LocalApp] same as "general_all", but only generated if the analysis started from BCL files
+                           "sample_DNA": {},  # [LocalApp] files related to individual DNA samples, only exported for eligible samples
+                           "sample_DNA_bcl": {}, # [LocalApp] same as "sample_DNA", but only generated if the analysis started from BCL files
+                           "sample_DNA_SPD": {}, # [LocalApp] same as "sample_DNA", but these paths are only valid for samples whose Sample_ID != Pair_ID
+                           "sample_DNA_SPE": {}, # [LocalApp] same as "sample_DNA", but these paths are only valid for samples whose Sample_ID == Pair_ID
+                           "sample_RNA": {},  # [LocalApp] files related to individual RNA samples, only exported for eligible samples
+                           "sample_RNA_bcl": {}, # [LocalApp] same as "sample_RNA", but only generated if the analysis started from BCL files
+                           "sample_RNA_SPD": {}, # [LocalApp] same as "sample_RNA", but these paths are only valid for samples whose Sample_ID != Pair_ID
+                           "sample_RNA_SPE": {}, # [LocalApp] same as "sample_RNA", but these paths are only valid for samples whose Sample_ID == Pair_ID
+                           "T_general": {}, # [TSOPPI] files related to the whole TSOPPI run, not individual samples (e.g., overall analysis logs)
+                           "T_any_DNA": {}, # [TSOPPI] files created if any DNA sample (tumor or normal) was processed
+                           "T_DNA_tumor": {},  # [TSOPPI] files specififc to tumor DNA samples
+                           "T_DNA_normal": {}, # [TSOPPI] files specififc to matched normal DNA samples
+                           "T_RNA_tumor": {},  # [TSOPPI] files specififc to tumor RNA samples
+                           "T_DNA_tumor_plus": {}, # [TSOPPI] files created if a tumor DNA sample was post-processed together with either a matched normal DNA or a matched tumor RNA sample
+                           "T_DNA_tumor_RNA_tumor": {} # [TSOPPI] files created only if the tumor DNA sample is paired with a tumor RNA sample
+                          }
 
     with open(extraction_path_patterns_file, "r") as epp_infile:
         for line in epp_infile:
@@ -510,7 +524,8 @@ def main():
                                     + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
 
         # go through the LocalApp path patterns for sample-wise files
-        for file_pattern_type in ["sample_DNA", "sample_RNA", "sample_DNA_bcl", "sample_RNA_bcl"]:
+        for file_pattern_type in ["sample_DNA", "sample_RNA", "sample_DNA_bcl", "sample_RNA_bcl",
+                                  "sample_DNA_SPD", "sample_DNA_SPE", "sample_RNA_SPD", "sample_RNA_SPE"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
             if ((file_pattern_type in ["sample_DNA_bcl", "sample_RNA_bcl"]) and (not from_BCL)):
                 continue
@@ -520,6 +535,10 @@ def main():
                 XNA_sample_list = RNA_sample_list
             for sample_id in XNA_sample_list:
                 pair_id = XNA_sample_list[sample_id]["pair_id"]
+                if ((sample_id == pair_id) and (file_pattern_type in ["sample_DNA_SPD", "sample_RNA_SPD"])):
+                    continue
+                elif ((sample_id != pair_id) and (file_pattern_type in ["sample_DNA_SPE", "sample_RNA_SPE"])):
+                    continue
                 for path_pattern in extraction_patterns[file_pattern_type]:
                     expected_matches = extraction_patterns[file_pattern_type][path_pattern]
                     # fill in sample ID placeholders within the path patterns
