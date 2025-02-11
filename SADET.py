@@ -132,13 +132,10 @@ def main():
     sadet_logger = logging.getLogger()
     sadet_logger.setLevel(logging.INFO)
 
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    file_handler = logging.FileHandler(outfile_log_cont, mode = "w")
-
     logging_formatter = logging.Formatter(fmt = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s", datefmt = "%Y-%m-%d_%H:%M:%S")
-    file_handler.setFormatter(logging_formatter)
-    stdout_handler.setFormatter(logging_formatter)
 
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging_formatter)
     sadet_logger.addHandler(stdout_handler)
 
     # if no output file prefix is set by the user, set a date-based one
@@ -257,6 +254,8 @@ def main():
             exit(0)
 
     # save a copy of log messages into a file
+    file_handler = logging.FileHandler(outfile_log_cont, mode = "w")
+    file_handler.setFormatter(logging_formatter)
     sadet_logger.addHandler(file_handler)
 
     # output parameter setting information
