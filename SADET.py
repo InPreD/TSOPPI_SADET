@@ -224,6 +224,8 @@ def main():
     outfile_password_path = pass_file_cont_path
     outfile_dir_parent_path = str(Path(input_dir_cont_path).parents[0])
     outfile_script_suffix = "_" + input_type + "_container_export.sh"
+    outfile_script_stdout_log_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_container_export_stdout.log"
+    outfile_script_stderr_log_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_container_export_stderr.log"
     outfile_file_path_list = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
     outfile_archive_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
     outfile_file_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
@@ -233,6 +235,8 @@ def main():
         outfile_password_path = pass_file_hs_path
         outfile_dir_parent_path = str(Path(input_dir_hs_path).parents[0])
         outfile_script_suffix = "_" + input_type + "_host_system_export.sh"
+        outfile_script_stdout_log_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_host_system_export_stdout.log"
+        outfile_script_stderr_log_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_host_system_export_stderr.log"
         outfile_file_path_list = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
         outfile_archive_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
         outfile_file_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
@@ -698,8 +702,11 @@ def main():
                 optional_ampersand = " &"
 
             esp_outfile.write("#!/bin/bash\n")
+            esp_outfile.write("# set up copying of all stdout and stderr output into dedicated log files\n")
+            esp_outfile.write("exec >  >(tee -i {})\n".format(outfile_script_stdout_log_path))
+            esp_outfile.write("exec 2> >(tee -i {} >&2)\n".format(outfile_script_stderr_log_path))
             esp_outfile.write("# packaging and encryption of selected files\n")
-            esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
+            esp_outfile.write("if [ -f {0} ]; then rm {0} ; fi\n".format(outfile_archive_path))
             esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
                               outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
@@ -707,7 +714,7 @@ def main():
                 esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
                 esp_outfile.write("# file-level md5sum creation\n")
-                esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
+                esp_outfile.write("cd {}\n".format(outfile_dir_parent_path))
                 esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
                                   outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
