@@ -706,6 +706,7 @@ def main():
             esp_outfile.write("echo \"setting up dedicated stdout and stderr log files..\"\n")
             esp_outfile.write("exec >  >(tee -i {})\n".format(outfile_script_stdout_log_path))
             esp_outfile.write("exec 2> >(tee -i {} >&2)\n".format(outfile_script_stderr_log_path))
+            esp_outfile.write("sleep 2\n")
             esp_outfile.write("echo \"packaging and encrypting selected files..\"\n")
             esp_outfile.write("if [ -f {0} ]; then rm {0} ; fi\n".format(outfile_archive_path))
             esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
@@ -722,7 +723,6 @@ def main():
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
             esp_outfile.write("date\n")
-            esp_outfile.write("sleep 2\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
