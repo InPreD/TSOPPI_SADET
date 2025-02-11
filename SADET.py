@@ -722,6 +722,7 @@ def main():
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
             esp_outfile.write("date\n")
+            esp_outfile.write("sleep 2\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
