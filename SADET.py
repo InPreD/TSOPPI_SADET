@@ -64,9 +64,10 @@ def main():
                                 " At least 16 characters (including a number, a small letter, a capital letter and an underscore) are recommended."
                                 " Whitespace characters are not allowed.")
     arg_parser.add_argument("--sample_ID_list", required=True,
-                            help="Absolute path to a text file specifying IDs of samples whose data should be extracted."
-                                " A two-column tab-seperated file is expected, with the ID strings being listed in the second column."
-                                " The first column should be used to specify an ID-matching method to be used with given ID (e.g., \"prefix\").")
+                            help="Absolute path to a text file specifying the IDs of samples whose data should be extracted."
+                                " A header-enabled tab-seperated file with at least two columns is expected on input (the column order does not matter)."
+                                " A column titled \"target_ID\" should specify the ID strings."
+                                " A column titled \"matching_method\" should specify an ID-matching method to be used with the corresponding ID (e.g., \"prefix\").")
     arg_parser.add_argument("--output_directory", required=True,
                             help="Absolute path to the directory in which all of the output files should be stored."
                                 " If not existing, the directory will be created.")
