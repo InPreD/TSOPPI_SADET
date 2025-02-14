@@ -321,7 +321,12 @@ def main():
     # load the extraction path patterns
     extraction_path_patterns_file = "/inpred/resources/data/extraction_path_patterns.tsv"
     # path patterns for files that should be extracted, broken down into sub-categories
+    # all LocalApp pattern categories related to files generated for individual DNA samples should start with "sample_DNA"
+    # - no other category names should have this prefix
+    # all LocalApp pattern categories related to files generated for individual RNA samples should start with "sample_RNA"
+    # - no other category names should have this prefix
     extraction_patterns = {"general_all": {}, # [LocalApp] files related to the whole LocalApp run, not individual samples (e.g., overall analysis logs and metrics)
+                           "general_requiring_DNA": {}, # [LocalApp] same as "general_all", but only generated if the input included DNA files
                            "general_bcl": {}, # [LocalApp] same as "general_all", but only generated if the analysis started from BCL files
                            "sample_DNA": {},  # [LocalApp] files related to individual DNA samples, only exported for eligible samples
                            "sample_DNA_bcl": {}, # [LocalApp] same as "sample_DNA", but only generated if the analysis started from BCL files
@@ -507,9 +512,11 @@ def main():
             del available_file_paths_dict[input_dir_cont_path + "/"]
 
         # go through the LocalApp path patterns for general files
-        for file_pattern_type in ["general_all", "general_bcl"]:
+        for file_pattern_type in ["general_all", "general_requiring_DNA", "general_bcl"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
             if ((file_pattern_type == "general_bcl") and (not from_BCL)):
+                continue
+            if ((file_pattern_type == "general_requiring_DNA") and (len(DNA_sample_list) == 0)):
                 continue
             # check one path pattern at a time, look for matches among the loaded file paths
             for path_pattern in extraction_patterns[file_pattern_type]:
@@ -534,7 +541,7 @@ def main():
                 continue
             # process DNA- and RNA- specific path patterns in turn
             XNA_sample_list = DNA_sample_list
-            if (file_pattern_type in ["sample_RNA", "sample_RNA_bcl", "sample_RNA_SPD", "sample_RNA_SPE"]):
+            if (file_pattern_type.startswith("sample_RNA")):
                 XNA_sample_list = RNA_sample_list
             for sample_id in XNA_sample_list:
                 pair_id = XNA_sample_list[sample_id]["pair_id"]

@@ -83,10 +83,10 @@ LocalApp	1	general_all	Logs_Intermediates/TrimFastq/TrimFastq[^/]*.log
 LocalApp	1	general_all	Logs_Intermediates/TrimFastq/dsdm.json
 LocalApp	1	general_all	Logs_Intermediates/VariantCaller/VariantCaller[^/]*.log
 LocalApp	1	general_all	Logs_Intermediates/VariantCaller/dsdm.json
-LocalApp	1	general_all	Logs_Intermediates/VariantCaller/PiscesLogs/PiscesLog.txt
-LocalApp	1	general_all	Logs_Intermediates/VariantCaller/PiscesLogs/PiscesOptions.used.json
-LocalApp	1	general_all	Logs_Intermediates/VariantCaller/PsaraLogs/PsaraLog.txt
-LocalApp	1	general_all	Logs_Intermediates/VariantCaller/PsaraLogs/PsaraOptions.used.json
+LocalApp	1	general_requiring_DNA	Logs_Intermediates/VariantCaller/PiscesLogs/PiscesLog.txt
+LocalApp	1	general_requiring_DNA	Logs_Intermediates/VariantCaller/PiscesLogs/PiscesOptions.used.json
+LocalApp	1	general_requiring_DNA	Logs_Intermediates/VariantCaller/PsaraLogs/PsaraLog.txt
+LocalApp	1	general_requiring_DNA	Logs_Intermediates/VariantCaller/PsaraLogs/PsaraOptions.used.json
 LocalApp	1	general_all	Logs_Intermediates/VariantMatching/VariantMatching[^/]*.log
 LocalApp	1	general_all	Logs_Intermediates/VariantMatching/dsdm.json
 LocalApp	1	general_bcl	Logs_Intermediates/RunQc/RunQc[^/]*.log
