@@ -64,9 +64,10 @@ def main():
                                 " At least 16 characters (including a number, a small letter, a capital letter and an underscore) are recommended."
                                 " Whitespace characters are not allowed.")
     arg_parser.add_argument("--sample_ID_list", required=True,
-                            help="Absolute path to a text file specifying IDs of samples whose data should be extracted."
-                                " A two-column tab-seperated file is expected, with the ID strings being listed in the second column."
-                                " The first column should be used to specify an ID-matching method to be used with given ID (e.g., \"prefix\").")
+                            help="Absolute path to a text file specifying the IDs of samples whose data should be extracted."
+                                " A header-enabled tab-seperated file with at least two columns is expected on input (the column order does not matter)."
+                                " A column titled \"target_ID\" should specify the ID strings."
+                                " A column titled \"matching_method\" should specify an ID-matching method to be used with the corresponding ID (e.g., \"prefix\").")
     arg_parser.add_argument("--output_directory", required=True,
                             help="Absolute path to the directory in which all of the output files should be stored."
                                 " If not existing, the directory will be created.")
@@ -129,12 +130,14 @@ def main():
     #variant_summary_file_pattern = arg_dict["variant_summary_file_pattern"]
 
     # set up logging
-    logging.basicConfig(
-        level = logging.INFO,
-        format = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s",
-        datefmt = "%Y-%m-%d_%H:%M:%S",
-        #filemode = "w",
-        handlers = [logging.StreamHandler(sys.stdout)])
+    sadet_logger = logging.getLogger()
+    sadet_logger.setLevel(logging.INFO)
+
+    logging_formatter = logging.Formatter(fmt = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s", datefmt = "%Y-%m-%d_%H:%M:%S")
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging_formatter)
+    sadet_logger.addHandler(stdout_handler)
 
     # if no output file prefix is set by the user, set a date-based one
     if output_file_prefix is None:
@@ -221,27 +224,31 @@ def main():
     # - for runtime packaging
     outfile_password_path = pass_file_cont_path
     outfile_dir_parent_path = str(Path(input_dir_cont_path).parents[0])
-    outfile_script_suffix = "_" + input_type + "_container_export.sh"
-    outfile_file_path_list = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    outfile_archive_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-    outfile_file_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-    outfile_archive_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+    outfile_script_suffix = "{}_container_export.sh".format(input_type)
+    outfile_script_stdout_log_path = "{}/{}_{}_container_export_stdout.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_stderr_log_path = "{}/{}_{}_container_export_stderr.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_cont_path, output_file_prefix, input_type) 
+    outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_cont_path, output_file_prefix, input_type)
     # - for host-system packaging done later
     if generate_export_script_only:
         outfile_password_path = pass_file_hs_path
         outfile_dir_parent_path = str(Path(input_dir_hs_path).parents[0])
-        outfile_script_suffix = "_" + input_type + "_host_system_export.sh"
-        outfile_file_path_list = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-        outfile_archive_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-        outfile_file_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-        outfile_archive_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+        outfile_script_suffix = "{}_host_system_export.sh".format(input_type)
+        outfile_script_stdout_log_path = "{}/{}_{}_host_system_export_stdout.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_script_stderr_log_path = "{}/{}_{}_host_system_export_stderr.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_hs_path, output_file_prefix, input_type)
 
     outfile_dir_name = Path(input_dir_cont_path).name
-    outfile_log_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".log"
-    outfile_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    skipped_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_skip.txt"
-    inherited_error_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_inherited_errors.txt"
-    outfile_script_path_cont = output_dir_cont_path + "/" + output_file_prefix + outfile_script_suffix
+    outfile_log_cont = "{}/{}_{}.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list_cont = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    skipped_file_path_list_cont = "{}/{}_{}_files_to_skip.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    inherited_error_list_cont = "{}/{}_{}_inherited_errors.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_path_cont = "{}/{}_{}".format(output_dir_cont_path, output_file_prefix, outfile_script_suffix)
 
     # terminate if result-overwriting is not enabled and the key output files already exist
     if not rewrite_output:
@@ -252,7 +259,9 @@ def main():
             exit(0)
 
     # save a copy of log messages into a file
-    logging.root.addHandler(logging.FileHandler(outfile_log_cont))
+    file_handler = logging.FileHandler(outfile_log_cont, mode = "w")
+    file_handler.setFormatter(logging_formatter)
+    sadet_logger.addHandler(file_handler)
 
     # output parameter setting information
     logging.info("TSOPPI: SAmple Data Extraction Tool, version "
@@ -694,21 +703,26 @@ def main():
                 optional_ampersand = " &"
 
             esp_outfile.write("#!/bin/bash\n")
-            esp_outfile.write("# packaging and encryption of selected files\n")
-            esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
+            esp_outfile.write("echo \"setting up dedicated stdout and stderr log files..\"\n")
+            esp_outfile.write("exec >  >(tee -i {})\n".format(outfile_script_stdout_log_path))
+            esp_outfile.write("exec 2> >(tee -i {} >&2)\n".format(outfile_script_stderr_log_path))
+            esp_outfile.write("date\n")
+            esp_outfile.write("echo \"packaging and encrypting selected files..\"\n")
+            esp_outfile.write("if [ -f {0} ]; then rm {0} ; fi\n".format(outfile_archive_path))
             esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
                               outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
-                esp_outfile.write("# archive-level md5sum creation\n")
+                esp_outfile.write("echo \"creating archive-level md5 checksums..\"\n")
                 esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
-                esp_outfile.write("# file-level md5sum creation\n")
-                esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
+                esp_outfile.write("echo \"creating file-level md5 checksums..\"\n")
+                esp_outfile.write("cd {}\n".format(outfile_dir_parent_path))
                 esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
                                   outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
+            esp_outfile.write("date\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
