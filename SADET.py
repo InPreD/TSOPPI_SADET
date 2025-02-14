@@ -518,10 +518,13 @@ def main():
                 # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                 matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict, input_dir_cont_path)
                 extraction_matches = matching_paths
-                # print out a warning if too few files were found to match a given path pattern
-                if (extraction_matches < expected_matches):
-                    logging.warning("Too few matches found for the following path pattern: \""
-                                    + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
+                # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                if ((expected_matches == 0) and (extraction_matches == 0)):
+                    logging.info(" - No matches found for the following path pattern: \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(
+                                 input_dir_cont_path, path_pattern))
+                elif (extraction_matches < expected_matches):
+                    logging.warning(" - Too few matches found for the following path pattern: \"{}/{}\" ({} matches expected, {} found).".format(
+                                    input_dir_cont_path, path_pattern, expected_matches, extraction_matches))
 
         # go through the LocalApp path patterns for sample-wise files
         for file_pattern_type in ["sample_DNA", "sample_DNA_bcl", "sample_DNA_SPD", "sample_DNA_SPE",
@@ -547,11 +550,13 @@ def main():
                     # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                     matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict, input_dir_cont_path)
                     extraction_matches = matching_paths
-                    # print out a warning if too few files were found to match a given path pattern
-                    if (extraction_matches < expected_matches):
-                        logging.warning("Too few matches found for the following path pattern for sample \"" + sample_id + "\": \""
-                                        + input_dir_cont_path + "/" + sample_path_pattern + "\" (" + str(expected_matches) + " matches expected, "
-                                        + str(extraction_matches) + " found).")
+                    # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                    if ((expected_matches == 0) and (extraction_matches == 0)):
+                        logging.info(" - No matches found for the following path pattern: \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(
+                                     input_dir_cont_path, sample_path_pattern))
+                    elif (extraction_matches < expected_matches):
+                        logging.warning(" - Too few matches found for the following path pattern: \"{}/{}\" ({} matches expected, {} found).".format(
+                                        input_dir_cont_path, sample_path_pattern, expected_matches, extraction_matches))
 
     # process TSOPPI data
     elif (input_type == "TSOPPI"):
@@ -662,10 +667,12 @@ def main():
                         # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                         matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict_L1, input_dir_cont_path)
                         extraction_matches = matching_paths
-                        # print out a warning if too few files were found to match a given path pattern
-                        if (extraction_matches < expected_matches):
-                            logging.warning(" - Too few matches found for the following path pattern: \""
-                                            + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
+                        # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                        if ((expected_matches == 0) and (extraction_matches == 0)):
+                            logging.info(" - No matches found for the following path pattern: \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(input_dir_cont_path, path_pattern))
+                        elif (extraction_matches < expected_matches):
+                            logging.warning(" - Too few matches found for the following path pattern: \"{}/{}\" ({} matches expected, {} found).".format(
+                                                input_dir_cont_path, path_pattern, expected_matches, extraction_matches))
 
                 # extend the overal TSOPPI path dictionary with file path information for given patient
                 available_file_paths_dict = available_file_paths_dict | available_file_paths_dict_L1
