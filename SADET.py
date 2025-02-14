@@ -224,31 +224,31 @@ def main():
     # - for runtime packaging
     outfile_password_path = pass_file_cont_path
     outfile_dir_parent_path = str(Path(input_dir_cont_path).parents[0])
-    outfile_script_suffix = "_" + input_type + "_container_export.sh"
-    outfile_script_stdout_log_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_container_export_stdout.log"
-    outfile_script_stderr_log_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_container_export_stderr.log"
-    outfile_file_path_list = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    outfile_archive_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-    outfile_file_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-    outfile_archive_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+    outfile_script_suffix = "{}_container_export.sh".format(input_type)
+    outfile_script_stdout_log_path = "{}/{}_{}_container_export_stdout.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_stderr_log_path = "{}/{}_{}_container_export_stderr.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_cont_path, output_file_prefix, input_type) 
+    outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_cont_path, output_file_prefix, input_type)
     # - for host-system packaging done later
     if generate_export_script_only:
         outfile_password_path = pass_file_hs_path
         outfile_dir_parent_path = str(Path(input_dir_hs_path).parents[0])
-        outfile_script_suffix = "_" + input_type + "_host_system_export.sh"
-        outfile_script_stdout_log_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_host_system_export_stdout.log"
-        outfile_script_stderr_log_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_host_system_export_stderr.log"
-        outfile_file_path_list = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-        outfile_archive_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-        outfile_file_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-        outfile_archive_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+        outfile_script_suffix = "{}_host_system_export.sh".format(input_type)
+        outfile_script_stdout_log_path = "{}/{}_{}_host_system_export_stdout.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_script_stderr_log_path = "{}/{}_{}_host_system_export_stderr.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_hs_path, output_file_prefix, input_type)
 
     outfile_dir_name = Path(input_dir_cont_path).name
-    outfile_log_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".log"
-    outfile_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    skipped_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_skip.txt"
-    inherited_error_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_inherited_errors.txt"
-    outfile_script_path_cont = output_dir_cont_path + "/" + output_file_prefix + outfile_script_suffix
+    outfile_log_cont = "{}/{}_{}.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list_cont = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    skipped_file_path_list_cont = "{}/{}_{}_files_to_skip.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    inherited_error_list_cont = "{}/{}_{}_inherited_errors.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_path_cont = "{}/{}_{}".format(output_dir_cont_path, output_file_prefix, outfile_script_suffix)
 
     # terminate if result-overwriting is not enabled and the key output files already exist
     if not rewrite_output:
