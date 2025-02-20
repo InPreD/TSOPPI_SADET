@@ -321,13 +321,17 @@ def main():
     # load the extraction path patterns
     extraction_path_patterns_file = "/inpred/resources/data/extraction_path_patterns.tsv"
     # path patterns for files that should be extracted, broken down into sub-categories
-    # all LocalApp pattern categories related to files generated for individual DNA samples should start with "sample_DNA"
+    # names of all LocalApp pattern categories related to files generated for individual DNA samples should start with "sample_DNA"
     # - no other category names should have this prefix
-    # all LocalApp pattern categories related to files generated for individual RNA samples should start with "sample_RNA"
+    # names of all LocalApp pattern categories related to files generated for individual RNA samples should start with "sample_RNA"
+    # - no other category names should have this prefix
+    # names of all LocalApp pattern categories related to files generated during the "FastqGeneration" LocalApp analysis step should start with "general_bcl"
     # - no other category names should have this prefix
     extraction_patterns = {"general_all": {}, # [LocalApp] files related to the whole LocalApp run, not individual samples (e.g., overall analysis logs and metrics)
                            "general_requiring_DNA": {}, # [LocalApp] same as "general_all", but only generated if the input included DNA files
                            "general_bcl": {}, # [LocalApp] same as "general_all", but only generated if the analysis started from BCL files
+                           "general_bcl_combined": {}, # [LocalApp] same as "general_bcl", only generated if demultiplexing Logs, Reports and sample sheet files are generated jointly for DNA and RNA samples
+                           "general_bcl_separate": {}, # [LocalApp] same as "general_bcl", only generated if demultiplexing Logs, Reports and sample sheet files are generated separately for DNA and RNA samples
                            "sample_DNA": {},  # [LocalApp] files related to individual DNA samples, only exported for eligible samples
                            "sample_DNA_bcl": {}, # [LocalApp] same as "sample_DNA", but only generated if the analysis started from BCL files
                            "sample_DNA_SPD": {}, # [LocalApp] same as "sample_DNA", but these paths are only valid for samples whose Sample_ID != Pair_ID
@@ -389,6 +393,10 @@ def main():
         else:
             logging.error("Unable to find the \"Logs_Intermediates\" sub-directory. Exiting.")
             exit(21)
+
+        # initialization of the demultiplexing output type indicator
+        # - if the FastqGeneration LocalApp step was run, the variable should be assigned value of either "combined" or "separate", based on the LocalApp output
+        demultiplexing_output = None
 
         # check that there is exactly one file matching the expected sample sheet file path
         LA_samplesheet_path = "/Logs_Intermediates/SamplesheetValidation/*_SampleSheet.csv"
@@ -503,6 +511,23 @@ def main():
                     break
         if from_BCL:
             logging.info("Expecting output for a LocalApp analysis starting from BCL files.")
+            
+            demultiplexing_sample_sheet_combined_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_combined.csv"
+            demultiplexing_sample_sheet_dna_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_dna.csv"
+            demultiplexing_sample_sheet_rna_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_rna.csv"
+
+            found_demultiplexing_sample_sheet_combined = Path(demultiplexing_sample_sheet_combined_path).is_file()
+            found_demultiplexing_sample_sheet_separate = Path(demultiplexing_sample_sheet_dna_path).is_file() or Path(demultiplexing_sample_sheet_rna_path).is_file()
+
+            if (found_demultiplexing_sample_sheet_combined and (not found_demultiplexing_sample_sheet_separate)):
+                demultiplexing_output = "combined"
+                logging.info("Combined demultiplexing Log and Report files for DNA and RNA samples detected.")
+            elif ((not found_demultiplexing_sample_sheet_combined) and found_demultiplexing_sample_sheet_separate):
+                demultiplexing_output = "separate"
+                logging.info("Separate demultiplexing Log and Report files for DNA and RNA samples detected.")
+            else:
+                logging.error("Cannot determine the type of demultiplexing Log and Report files (separate vs. combined output for DNA and RNA samples). Exiting.")
+                exit(22)
         else:
             logging.info("Expecting output for a LocalApp analysis starting from FASTQ files.")
 
@@ -512,9 +537,13 @@ def main():
             del available_file_paths_dict[input_dir_cont_path + "/"]
 
         # go through the LocalApp path patterns for general files
-        for file_pattern_type in ["general_all", "general_requiring_DNA", "general_bcl"]:
+        for file_pattern_type in ["general_all", "general_requiring_DNA", "general_bcl", "general_bcl_combined", "general_bcl_separate"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
-            if ((file_pattern_type == "general_bcl") and (not from_BCL)):
+            if ((file_pattern_type.startswith("general_bcl")) and (not from_BCL)):
+                continue
+            if ((file_pattern_type == "general_bcl_combined") and (demultiplexing_output == "separate")):
+                continue
+            elif ((file_pattern_type == "general_bcl_separate") and (demultiplexing_output == "combined")):
                 continue
             if ((file_pattern_type == "general_requiring_DNA") and (len(DNA_sample_list) == 0)):
                 continue
