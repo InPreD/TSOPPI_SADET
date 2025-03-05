@@ -477,7 +477,7 @@ def main():
                         # check compliance with the InPreD nomenclature, if enabled
                         if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sv_sample_id))):
                             logging.warning("The following sample ID doesn't comply with"
-                                            " the InPreD ID nomenclature: \"" + ID_string + "\"). The sample will be ignored.")
+                                            " the InPreD ID nomenclature: \"" + ID_string + "\". The sample will be ignored.")
                         else:
                             if (sv_sample_type == "DNA"):
                                 DNA_sample_list[sv_sample_id] = {"pair_id": sv_pair_id, "pattern": matching_ids[0]}
@@ -663,7 +663,7 @@ def main():
                                 # if enabled, check the InPreD ID nomenclature
                                 if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sample_id))):
                                     logging.warning(" - The following sample ID doesn't comply with"
-                                                    " the InPreD ID nomenclature: \"" + ID_string + "\"). The sample will be ignored.")
+                                                    " the InPreD ID nomenclature: \"" + ID_string + "\". The sample will be ignored.")
                                 else:
                                     # keep track of sample IDs that pass all checks
                                     eligible_sample_dict[sample_type] = sample_id
