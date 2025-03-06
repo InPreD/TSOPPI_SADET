@@ -342,6 +342,7 @@ TSOPPI	1	T_DNA_tumor	${DT_SAMPLE_ID}_PCGR_1.0.0_somatic/${DT_SAMPLE_ID}.pcgr_acm
 TSOPPI	1	T_DNA_tumor	${DT_SAMPLE_ID}_PCGR_1.0.0_somatic/${DT_SAMPLE_ID}.pcgr_config.rds
 TSOPPI	1	T_DNA_tumor	${DT_SAMPLE_ID}_PCGR_1.0.0_somatic/pcgr_flexdb
 TSOPPI	1	T_DNA_tumor	${DT_SAMPLE_ID}_PCGR_1.0.0_somatic/pcgr_rmarkdown
+TSOPPI	0	T_DNA_tumor	${DT_SAMPLE_ID}_PCGR_1.0.0_mutational_signatures.*
 TSOPPI	1	T_DNA_tumor	LOGS/01_convert_MergedSmallVariants_VCF_to_TSV_tumor_stderr.log
 TSOPPI	1	T_DNA_tumor	LOGS/01_convert_MergedSmallVariants_VCF_to_TSV_tumor_stdout.log
 TSOPPI	1	T_DNA_tumor	LOGS/01_plot_metrics_tumor_DNA_stderr.log
