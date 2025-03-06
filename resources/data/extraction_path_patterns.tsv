@@ -369,6 +369,8 @@ TSOPPI	1	T_DNA_tumor	LOGS/04_PCGR_all_variants_annotation_stderr.log
 TSOPPI	1	T_DNA_tumor	LOGS/04_PCGR_all_variants_annotation_stdout.log
 TSOPPI	1	T_DNA_tumor	LOGS/04_PCGR_somatic_variants_annotation_stderr.log
 TSOPPI	1	T_DNA_tumor	LOGS/04_PCGR_somatic_variants_annotation_stdout.log
+TSOPPI	0	T_DNA_tumor	LOGS/04_PCGR_mutational_signatures_stderr.log
+TSOPPI	0	T_DNA_tumor	LOGS/04_PCGR_mutational_signatures_stdout.log
 TSOPPI	1	T_DNA_tumor	LOGS/05_CNV_plotting_stderr.log
 TSOPPI	1	T_DNA_tumor	LOGS/05_CNV_plotting_stdout.log
 TSOPPI	1	T_DNA_tumor	LOGS/05_create_variant_interpretation_table_stderr.log
