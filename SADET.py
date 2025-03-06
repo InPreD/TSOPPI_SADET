@@ -64,9 +64,10 @@ def main():
                                 " At least 16 characters (including a number, a small letter, a capital letter and an underscore) are recommended."
                                 " Whitespace characters are not allowed.")
     arg_parser.add_argument("--sample_ID_list", required=True,
-                            help="Absolute path to a text file specifying IDs of samples whose data should be extracted."
-                                " A two-column tab-seperated file is expected, with the ID strings being listed in the second column."
-                                " The first column should be used to specify an ID-matching method to be used with given ID (e.g., \"prefix\").")
+                            help="Absolute path to a text file specifying the IDs of samples whose data should be extracted."
+                                " A header-enabled tab-seperated file with at least two columns is expected on input (the column order does not matter)."
+                                " A column titled \"target_ID\" should specify the ID strings."
+                                " A column titled \"matching_method\" should specify an ID-matching method to be used with the corresponding ID (e.g., \"prefix\").")
     arg_parser.add_argument("--output_directory", required=True,
                             help="Absolute path to the directory in which all of the output files should be stored."
                                 " If not existing, the directory will be created.")
@@ -129,12 +130,14 @@ def main():
     #variant_summary_file_pattern = arg_dict["variant_summary_file_pattern"]
 
     # set up logging
-    logging.basicConfig(
-        level = logging.INFO,
-        format = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s",
-        datefmt = "%Y-%m-%d_%H:%M:%S",
-        #filemode = "w",
-        handlers = [logging.StreamHandler(sys.stdout)])
+    sadet_logger = logging.getLogger()
+    sadet_logger.setLevel(logging.INFO)
+
+    logging_formatter = logging.Formatter(fmt = "%(asctime)s [" + tool_tag + " - %(levelname)s] %(message)s", datefmt = "%Y-%m-%d_%H:%M:%S")
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging_formatter)
+    sadet_logger.addHandler(stdout_handler)
 
     # if no output file prefix is set by the user, set a date-based one
     if output_file_prefix is None:
@@ -221,27 +224,31 @@ def main():
     # - for runtime packaging
     outfile_password_path = pass_file_cont_path
     outfile_dir_parent_path = str(Path(input_dir_cont_path).parents[0])
-    outfile_script_suffix = "_" + input_type + "_container_export.sh"
-    outfile_file_path_list = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    outfile_archive_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-    outfile_file_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-    outfile_archive_level_md5_path = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+    outfile_script_suffix = "{}_container_export.sh".format(input_type)
+    outfile_script_stdout_log_path = "{}/{}_{}_container_export_stdout.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_stderr_log_path = "{}/{}_{}_container_export_stderr.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_cont_path, output_file_prefix, input_type) 
+    outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_cont_path, output_file_prefix, input_type)
     # - for host-system packaging done later
     if generate_export_script_only:
         outfile_password_path = pass_file_hs_path
         outfile_dir_parent_path = str(Path(input_dir_hs_path).parents[0])
-        outfile_script_suffix = "_" + input_type + "_host_system_export.sh"
-        outfile_file_path_list = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-        outfile_archive_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg"
-        outfile_file_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + "_individual_files.md5"
-        outfile_archive_level_md5_path = output_dir_hs_path + "/" + output_file_prefix + "_" + input_type + ".tar.gpg.md5"
+        outfile_script_suffix = "{}_host_system_export.sh".format(input_type)
+        outfile_script_stdout_log_path = "{}/{}_{}_host_system_export_stdout.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_script_stderr_log_path = "{}/{}_{}_host_system_export_stderr.log".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_path_list = "{}/{}_{}_files_to_export.txt".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_path = "{}/{}_{}.tar.gpg".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_file_level_md5_path = "{}/{}_{}_individual_files.md5".format(output_dir_hs_path, output_file_prefix, input_type)
+        outfile_archive_level_md5_path = "{}/{}_{}.tar.gpg.md5".format(output_dir_hs_path, output_file_prefix, input_type)
 
     outfile_dir_name = Path(input_dir_cont_path).name
-    outfile_log_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + ".log"
-    outfile_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_export.txt"
-    skipped_file_path_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_files_to_skip.txt"
-    inherited_error_list_cont = output_dir_cont_path + "/" + output_file_prefix + "_" + input_type + "_inherited_errors.txt"
-    outfile_script_path_cont = output_dir_cont_path + "/" + output_file_prefix + outfile_script_suffix
+    outfile_log_cont = "{}/{}_{}.log".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_file_path_list_cont = "{}/{}_{}_files_to_export.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    skipped_file_path_list_cont = "{}/{}_{}_files_to_skip.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    inherited_error_list_cont = "{}/{}_{}_inherited_errors.txt".format(output_dir_cont_path, output_file_prefix, input_type)
+    outfile_script_path_cont = "{}/{}_{}".format(output_dir_cont_path, output_file_prefix, outfile_script_suffix)
 
     # terminate if result-overwriting is not enabled and the key output files already exist
     if not rewrite_output:
@@ -252,7 +259,9 @@ def main():
             exit(0)
 
     # save a copy of log messages into a file
-    logging.root.addHandler(logging.FileHandler(outfile_log_cont))
+    file_handler = logging.FileHandler(outfile_log_cont, mode = "w")
+    file_handler.setFormatter(logging_formatter)
+    sadet_logger.addHandler(file_handler)
 
     # output parameter setting information
     logging.info("TSOPPI: SAmple Data Extraction Tool, version "
@@ -321,10 +330,33 @@ def main():
     # load the extraction path patterns
     extraction_path_patterns_file = "/inpred/resources/data/extraction_path_patterns.tsv"
     # path patterns for files that should be extracted, broken down into sub-categories
-    extraction_patterns = {"general_all": {}, "general_bcl": {}, "sample_DNA": {}, "sample_RNA": {},
-                           "sample_DNA_bcl": {}, "sample_RNA_bcl": {},
-                           "T_general": {}, "T_any_DNA": {}, "T_DNA_tumor_plus": {},
-                           "T_DNA_tumor": {}, "T_DNA_normal": {}, "T_RNA_tumor": {}, "T_DNA_tumor_RNA_tumor": {}}
+    # names of all LocalApp pattern categories related to files generated for individual DNA samples should start with "sample_DNA"
+    # - no other category names should have this prefix
+    # names of all LocalApp pattern categories related to files generated for individual RNA samples should start with "sample_RNA"
+    # - no other category names should have this prefix
+    # names of all LocalApp pattern categories related to files generated during the "FastqGeneration" LocalApp analysis step should start with "general_bcl"
+    # - no other category names should have this prefix
+    extraction_patterns = {"general_all": {}, # [LocalApp] files related to the whole LocalApp run, not individual samples (e.g., overall analysis logs and metrics)
+                           "general_requiring_DNA": {}, # [LocalApp] same as "general_all", but only generated if the input included DNA files
+                           "general_bcl": {}, # [LocalApp] same as "general_all", but only generated if the analysis started from BCL files
+                           "general_bcl_combined": {}, # [LocalApp] same as "general_bcl", only generated if demultiplexing Logs, Reports and sample sheet files are generated jointly for DNA and RNA samples
+                           "general_bcl_separate": {}, # [LocalApp] same as "general_bcl", only generated if demultiplexing Logs, Reports and sample sheet files are generated separately for DNA and RNA samples
+                           "sample_DNA": {},  # [LocalApp] files related to individual DNA samples, only exported for eligible samples
+                           "sample_DNA_bcl": {}, # [LocalApp] same as "sample_DNA", but only generated if the analysis started from BCL files
+                           "sample_DNA_SPD": {}, # [LocalApp] same as "sample_DNA", but these paths are only valid for samples whose Sample_ID != Pair_ID
+                           "sample_DNA_SPE": {}, # [LocalApp] same as "sample_DNA", but these paths are only valid for samples whose Sample_ID == Pair_ID
+                           "sample_RNA": {},  # [LocalApp] files related to individual RNA samples, only exported for eligible samples
+                           "sample_RNA_bcl": {}, # [LocalApp] same as "sample_RNA", but only generated if the analysis started from BCL files
+                           "sample_RNA_SPD": {}, # [LocalApp] same as "sample_RNA", but these paths are only valid for samples whose Sample_ID != Pair_ID
+                           "sample_RNA_SPE": {}, # [LocalApp] same as "sample_RNA", but these paths are only valid for samples whose Sample_ID == Pair_ID
+                           "T_general": {}, # [TSOPPI] files related to the whole TSOPPI run, not individual samples (e.g., overall analysis logs)
+                           "T_any_DNA": {}, # [TSOPPI] files created if any DNA sample (tumor or normal) was processed
+                           "T_DNA_tumor": {},  # [TSOPPI] files specififc to tumor DNA samples
+                           "T_DNA_normal": {}, # [TSOPPI] files specififc to matched normal DNA samples
+                           "T_RNA_tumor": {},  # [TSOPPI] files specififc to tumor RNA samples
+                           "T_DNA_tumor_plus": {}, # [TSOPPI] files created if a tumor DNA sample was post-processed together with either a matched normal DNA or a matched tumor RNA sample
+                           "T_DNA_tumor_RNA_tumor": {} # [TSOPPI] files created only if the tumor DNA sample is paired with a tumor RNA sample
+                          }
 
     with open(extraction_path_patterns_file, "r") as epp_infile:
         for line in epp_infile:
@@ -370,6 +402,10 @@ def main():
         else:
             logging.error("Unable to find the \"Logs_Intermediates\" sub-directory. Exiting.")
             exit(21)
+
+        # initialization of the demultiplexing output type indicator
+        # - if the FastqGeneration LocalApp step was run, the variable should be assigned value of either "combined" or "separate", based on the LocalApp output
+        demultiplexing_output = None
 
         # check that there is exactly one file matching the expected sample sheet file path
         LA_samplesheet_path = "/Logs_Intermediates/SamplesheetValidation/*_SampleSheet.csv"
@@ -441,7 +477,7 @@ def main():
                         # check compliance with the InPreD nomenclature, if enabled
                         if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sv_sample_id))):
                             logging.warning("The following sample ID doesn't comply with"
-                                            " the InPreD ID nomenclature: \"" + ID_string + "\"). The sample will be ignored.")
+                                            " the InPreD ID nomenclature: \"" + sv_sample_id + "\". The sample will be ignored.")
                         else:
                             if (sv_sample_type == "DNA"):
                                 DNA_sample_list[sv_sample_id] = {"pair_id": sv_pair_id, "pattern": matching_ids[0]}
@@ -484,6 +520,23 @@ def main():
                     break
         if from_BCL:
             logging.info("Expecting output for a LocalApp analysis starting from BCL files.")
+            
+            demultiplexing_sample_sheet_combined_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_combined.csv"
+            demultiplexing_sample_sheet_dna_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_dna.csv"
+            demultiplexing_sample_sheet_rna_path = input_dir_cont_path + "/Logs_Intermediates/FastqGeneration/SampleSheet_rna.csv"
+
+            found_demultiplexing_sample_sheet_combined = Path(demultiplexing_sample_sheet_combined_path).is_file()
+            found_demultiplexing_sample_sheet_separate = Path(demultiplexing_sample_sheet_dna_path).is_file() or Path(demultiplexing_sample_sheet_rna_path).is_file()
+
+            if (found_demultiplexing_sample_sheet_combined and (not found_demultiplexing_sample_sheet_separate)):
+                demultiplexing_output = "combined"
+                logging.info("Combined demultiplexing Log and Report files for DNA and RNA samples detected.")
+            elif ((not found_demultiplexing_sample_sheet_combined) and found_demultiplexing_sample_sheet_separate):
+                demultiplexing_output = "separate"
+                logging.info("Separate demultiplexing Log and Report files for DNA and RNA samples detected.")
+            else:
+                logging.error("Cannot determine the type of demultiplexing Log and Report files (separate vs. combined output for DNA and RNA samples). Exiting.")
+                exit(22)
         else:
             logging.info("Expecting output for a LocalApp analysis starting from FASTQ files.")
 
@@ -493,9 +546,15 @@ def main():
             del available_file_paths_dict[input_dir_cont_path + "/"]
 
         # go through the LocalApp path patterns for general files
-        for file_pattern_type in ["general_all", "general_bcl"]:
+        for file_pattern_type in ["general_all", "general_requiring_DNA", "general_bcl", "general_bcl_combined", "general_bcl_separate"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
-            if ((file_pattern_type == "general_bcl") and (not from_BCL)):
+            if ((file_pattern_type.startswith("general_bcl")) and (not from_BCL)):
+                continue
+            if ((file_pattern_type == "general_bcl_combined") and (demultiplexing_output == "separate")):
+                continue
+            elif ((file_pattern_type == "general_bcl_separate") and (demultiplexing_output == "combined")):
+                continue
+            if ((file_pattern_type == "general_requiring_DNA") and (len(DNA_sample_list) == 0)):
                 continue
             # check one path pattern at a time, look for matches among the loaded file paths
             for path_pattern in extraction_patterns[file_pattern_type]:
@@ -504,22 +563,30 @@ def main():
                 # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                 matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict, input_dir_cont_path)
                 extraction_matches = matching_paths
-                # print out a warning if too few files were found to match a given path pattern
-                if (extraction_matches < expected_matches):
-                    logging.warning("Too few matches found for the following path pattern: \""
-                                    + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
+                # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                if ((expected_matches == 0) and (extraction_matches == 0)):
+                    logging.info("No matches found for the following path pattern: \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(
+                                 input_dir_cont_path, path_pattern))
+                elif (extraction_matches < expected_matches):
+                    logging.warning("Too few matches found for the following path pattern: \"{}/{}\" ({} matches expected, {} found).".format(
+                                    input_dir_cont_path, path_pattern, expected_matches, extraction_matches))
 
         # go through the LocalApp path patterns for sample-wise files
-        for file_pattern_type in ["sample_DNA", "sample_RNA", "sample_DNA_bcl", "sample_RNA_bcl"]:
+        for file_pattern_type in ["sample_DNA", "sample_DNA_bcl", "sample_DNA_SPD", "sample_DNA_SPE",
+                                  "sample_RNA", "sample_RNA_bcl", "sample_RNA_SPD", "sample_RNA_SPE"]:
             # if the LocalApp analysis was started from FASTQ files, skip looking for files generated from BCL input
             if ((file_pattern_type in ["sample_DNA_bcl", "sample_RNA_bcl"]) and (not from_BCL)):
                 continue
             # process DNA- and RNA- specific path patterns in turn
             XNA_sample_list = DNA_sample_list
-            if (file_pattern_type in ["sample_RNA", "sample_RNA_bcl"]):
+            if (file_pattern_type.startswith("sample_RNA")):
                 XNA_sample_list = RNA_sample_list
             for sample_id in XNA_sample_list:
                 pair_id = XNA_sample_list[sample_id]["pair_id"]
+                if ((sample_id == pair_id) and (file_pattern_type in ["sample_DNA_SPD", "sample_RNA_SPD"])):
+                    continue
+                elif ((sample_id != pair_id) and (file_pattern_type in ["sample_DNA_SPE", "sample_RNA_SPE"])):
+                    continue
                 for path_pattern in extraction_patterns[file_pattern_type]:
                     expected_matches = extraction_patterns[file_pattern_type][path_pattern]
                     # fill in sample ID placeholders within the path patterns
@@ -528,11 +595,13 @@ def main():
                     # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                     matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict, input_dir_cont_path)
                     extraction_matches = matching_paths
-                    # print out a warning if too few files were found to match a given path pattern
-                    if (extraction_matches < expected_matches):
-                        logging.warning("Too few matches found for the following path pattern for sample \"" + sample_id + "\": \""
-                                        + input_dir_cont_path + "/" + sample_path_pattern + "\" (" + str(expected_matches) + " matches expected, "
-                                        + str(extraction_matches) + " found).")
+                    # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                    if ((expected_matches == 0) and (extraction_matches == 0)):
+                        logging.info("No matches found for the following path pattern for sample \"{}\": \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(
+                                     sample_id, input_dir_cont_path, sample_path_pattern))
+                    elif (extraction_matches < expected_matches):
+                        logging.warning("Too few matches found for the following path pattern for sample \"{}\": \"{}/{}\" ({} matches expected, {} found).".format(
+                                        sample_id, input_dir_cont_path, sample_path_pattern, expected_matches, extraction_matches))
 
     # process TSOPPI data
     elif (input_type == "TSOPPI"):
@@ -594,7 +663,7 @@ def main():
                                 # if enabled, check the InPreD ID nomenclature
                                 if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sample_id))):
                                     logging.warning(" - The following sample ID doesn't comply with"
-                                                    " the InPreD ID nomenclature: \"" + ID_string + "\"). The sample will be ignored.")
+                                                    " the InPreD ID nomenclature: \"" + sample_id + "\". The sample will be ignored.")
                                 else:
                                     # keep track of sample IDs that pass all checks
                                     eligible_sample_dict[sample_type] = sample_id
@@ -643,10 +712,12 @@ def main():
                         # check all loaded file paths for pattern match, change the status of matchning file paths to "E" (Export)
                         matching_paths = reclassify_matching_paths(path_regex, available_file_paths_dict_L1, input_dir_cont_path)
                         extraction_matches = matching_paths
-                        # print out a warning if too few files were found to match a given path pattern
-                        if (extraction_matches < expected_matches):
-                            logging.warning(" - Too few matches found for the following path pattern: \""
-                                            + input_dir_cont_path + "/" + path_pattern + "\" (" + str(expected_matches) + " matches expected, " + str(extraction_matches) + " found).")
+                        # print out a warning if too few files were found to match a given path pattern, and an info message if no files were found for "optional" LocalApp logs
+                        if ((expected_matches == 0) and (extraction_matches == 0)):
+                            logging.info("No matches found for the following path pattern: \"{}/{}\" (please note that these files are sometimes not created by the LocalApp).".format(input_dir_cont_path, path_pattern))
+                        elif (extraction_matches < expected_matches):
+                            logging.warning("Too few matches found for the following path pattern: \"{}/{}\" ({} matches expected, {} found).".format(
+                                                input_dir_cont_path, path_pattern, expected_matches, extraction_matches))
 
                 # extend the overal TSOPPI path dictionary with file path information for given patient
                 available_file_paths_dict = available_file_paths_dict | available_file_paths_dict_L1
@@ -694,21 +765,26 @@ def main():
                 optional_ampersand = " &"
 
             esp_outfile.write("#!/bin/bash\n")
-            esp_outfile.write("# packaging and encryption of selected files\n")
-            esp_outfile.write("if [ -f " + outfile_archive_path + " ]; then rm " + outfile_archive_path + " ; fi\n")
+            esp_outfile.write("echo \"setting up dedicated stdout and stderr log files..\"\n")
+            esp_outfile.write("exec >  >(tee -i {})\n".format(outfile_script_stdout_log_path))
+            esp_outfile.write("exec 2> >(tee -i {} >&2)\n".format(outfile_script_stderr_log_path))
+            esp_outfile.write("date\n")
+            esp_outfile.write("echo \"packaging and encrypting selected files..\"\n")
+            esp_outfile.write("if [ -f {0} ]; then rm {0} ; fi\n".format(outfile_archive_path))
             esp_outfile.write("tar -C {} -T {} -c | gpg -c --passphrase-file {} --batch --cipher-algo aes256 -o {}{}\n".format(
                               outfile_dir_parent_path, outfile_file_path_list, outfile_password_path, outfile_archive_path, optional_ampersand))
             if archive_level_md5sum:
-                esp_outfile.write("# archive-level md5sum creation\n")
+                esp_outfile.write("echo \"creating archive-level md5 checksums..\"\n")
                 esp_outfile.write("md5sum {} > {}{}\n".format(outfile_archive_path, outfile_archive_level_md5_path, optional_ampersand))
             else:
-                esp_outfile.write("# file-level md5sum creation\n")
-                esp_outfile.write("cd " + outfile_dir_parent_path + "\n")
+                esp_outfile.write("echo \"creating file-level md5 checksums..\"\n")
+                esp_outfile.write("cd {}\n".format(outfile_dir_parent_path))
                 esp_outfile.write("cat {} | while read path_line; do if [ -f ${{path_line}} ]; then md5sum ${{path_line}}; fi; done > {}{}\n".format(
                                   outfile_file_path_list, outfile_file_level_md5_path, optional_ampersand))
                 esp_outfile.write("cd - > /dev/null\n")
             if parallel_export_and_md5sum:
                 esp_outfile.write("wait\n")
+            esp_outfile.write("date\n")
 
         # if enabled, run the tar/gpg/md5sum bash script
         if not generate_export_script_only:
