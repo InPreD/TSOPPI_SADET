@@ -255,7 +255,7 @@ def main():
         if ((Path(outfile_log_cont).exists())
             or (Path(outfile_file_path_list_cont).exists())
             or (Path(skipped_file_path_list_cont).exists())):
-            logging.info("(Some of) the target output files already exist and output overwriting has been disabled. Exiting.")
+            logging.warning("(Some of) the target output files already exist and output overwriting has been disabled. Exiting.")
             exit(0)
 
     # save a copy of log messages into a file
@@ -321,8 +321,8 @@ def main():
                     if (matching_method == "prefix"):
                         ID_prefix_list.append(ID_string)
                     else:
-                        logging.warning(" - Unsupported ID matching method keyword encountered"
-                                        " (method keyword: \"" + matching_method + "\", ID: \"" + ID_string + "\"). The ID will be ignored.")
+                        logging.warning(" - Unsupported ID matching method encountered"
+                                        " (matching method: \"" + matching_method + "\", ID: \"" + ID_string + "\"). The ID will be ignored.")
                 elif(ID_string == ""):
                     logging.warning(" - Unsupported ID string (encountered ID value: \"" + ID_string + "\"). The ID will be ignored.")
     logging.info(" - ID loading done (" + str(len(ID_prefix_list)) + " IDs loaded).")
@@ -394,7 +394,7 @@ def main():
             if (ECO_stdout_line_list == ['']):
                 logging.info("Found zero error lines in the LocalApp logs.")
             else:
-                logging.info("Found " + str(len(ECO_stdout_line_list)) + " error lines in the LocalApp logs." 
+                logging.warning("Found " + str(len(ECO_stdout_line_list)) + " error lines in the LocalApp logs." 
                             " A copy of the error lines will be written into the inherited errors output file.")
                 with open(inherited_error_list_cont, "w") as iel_outfile:
                     for error_line in ECO_stdout_line_list:
@@ -476,7 +476,7 @@ def main():
                     else:
                         # check compliance with the InPreD nomenclature, if enabled
                         if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sv_sample_id))):
-                            logging.warning("The following sample ID doesn't comply with"
+                            logging.info("The following sample ID doesn't comply with"
                                             " the InPreD ID nomenclature: \"" + sv_sample_id + "\". The sample will be ignored.")
                         else:
                             if (sv_sample_type == "DNA"):
@@ -493,7 +493,7 @@ def main():
             logging.error("Sample sheet version not identified, no sample information extracted. Exiting.")
             exit(17)
         elif ((len(DNA_sample_list) + len(RNA_sample_list)) == 0):
-            logging.info("No samples suitable for extraction were identified within the processed sample sheet. Exiting.")
+            logging.warning("No samples suitable for extraction were identified within the processed sample sheet. Exiting.")
             exit(0)
         else:
             # sample sheet version info
@@ -621,7 +621,7 @@ def main():
                 sample_list_file_path = L1_path + "/sample_list.tsv"
 
                 if not Path(sample_list_file_path).is_file():
-                    logging.warning(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
+                    logging.info(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
                     continue
                 
                 logging.info(" - File \"sample_list.tsv\" found, its content will be checked for eligible samples.")
@@ -662,7 +662,7 @@ def main():
                             else:
                                 # if enabled, check the InPreD ID nomenclature
                                 if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sample_id))):
-                                    logging.warning(" - The following sample ID doesn't comply with"
+                                    logging.info(" - The following sample ID doesn't comply with"
                                                     " the InPreD ID nomenclature: \"" + sample_id + "\". The sample will be ignored.")
                                 else:
                                     # keep track of sample IDs that pass all checks
@@ -791,7 +791,7 @@ def main():
             logging.info("Running the data extraction, packaging and ecryption...")
             subprocess.run(["bash", outfile_script_path_cont])
     else:
-        logging.info("No files qualified for extraction. Exiting.")
+        logging.warning("No files qualified for extraction. Exiting.")
         exit(0)
 
 if __name__ == '__main__':
