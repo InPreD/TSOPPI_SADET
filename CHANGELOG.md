@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 Changes made during the development since the last release. (last update: 2025-03-11)
- 
+
+### Added
+
+### Changed
+
+### Fixed
+
+## Initial production version ["release 1.0.0"] - 2025-03-20
+
 ### Added
 - Devcontainer setup added. [#9](https://github.com/InPreD/TSOPPI_SADET/issues/9)
 - Added DockerHub build and push action. [#5](https://github.com/InPreD/TSOPPI_SADET/issues/5)
@@ -20,6 +28,8 @@ Changes made during the development since the last release. (last update: 2025-0
 ### Changed
 - Changed to a smaller Docker image (`python:3.14.0a2` -> `python:3.14.0a2-slim`). [#10](https://github.com/InPreD/TSOPPI_SADET/issues/10)
 - Various adjustments to the log output formatting.
+- Adjusted SADET's definition of the InPreD sample nomenclature in order to reflect the latest change introduced to the TSOPPI [nomenclature page](https://tsoppi.readthedocs.io/en/latest/inpred_nomenclature.html): Allowing unknown sample material type (code "X").
+- Adjusted the logging levels of selected log messages (`INFO` to `WARNING` and vice-versa).
    
 ### Fixed
 - Fixed `TypeError` caused by missing integer-to-string conversion. [#19](https://github.com/InPreD/TSOPPI_SADET/issues/19)
