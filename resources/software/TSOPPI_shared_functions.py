@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 
 def get_SADET_version():
-    return("0.1.1:2025-01-22")
+    return("1.0.0:2025-03-20")
 
 
 def get_path_prefix_error_message(file_description: str,
