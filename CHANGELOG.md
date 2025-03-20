@@ -42,7 +42,7 @@ Changes made during the development since the last release. (last update: 2025-0
 - Accounted for the possibility of the LocalApp creating seperate Log and Report files for DNA and RNA samples during BCL input demultiplexing.
 - Accounted for LocalApp runs that analyze only DNA samples or only RNA samples (potentially an incomplete fix by now).
  
-## Initial test version ["release 0.0.0"] - 2024-12-08
+## Initial test version [commit [`8507a30`](https://github.com/InPreD/TSOPPI_SADET/commit/8507a303ef5789f5ac6a656992c09547071da39e)] - 2024-12-08
  
 ### Added
 - Initial functionality.
