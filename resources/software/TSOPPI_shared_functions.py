@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 
 def get_SADET_version():
-    return("0.1.1:2025-01-22")
+    return("1.0.0:2025-03-20")
 
 
 def get_path_prefix_error_message(file_description: str,
@@ -85,6 +85,6 @@ def is_InPreD_ID(input_ID: str) -> bool:
     """Check whether the supplied string value is a valid InPreD ID."""
 
     # InPreD nomenclature version 3
-    id_regex = re.compile("^IP[ADHO][0-9]{4}-[CDR](0[1-7]|50|51)-[ACDdEeLMNPpRrTX][0-9]{2}-[ABCEFMS]([0-2][0-9]|30|XX)$")
+    id_regex = re.compile("^IP[ADHO][0-9]{4}-[CDR](0[1-7]|50|51)-[ACDdEeLMNPpRrTX][0-9]{2}-[ABCEFMSX]([0-2][0-9]|30|XX)$")
 
     return(re.match(id_regex, input_ID) is not None)

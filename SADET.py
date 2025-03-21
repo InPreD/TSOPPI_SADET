@@ -146,11 +146,10 @@ def main():
     # exit if user-supplied output file prefix contains anything but the allowed characters
     else:
         allowed_char_regex = re.compile("[a-zA-Z0-9_]+")
-        prefix_forbidden_char_tail = re.sub(allowed_char_regex, "", output_file_prefix)
-        if (len(prefix_forbidden_char_tail) > 0):
-            logging.error("The supplied output file prefix contains forbidden characters (\""
-                        + prefix_forbidden_char_tail[0] + "\")."
-                        " Please refer to the help message for more information. Exiting.\n")
+        prefix_forbidden_chars = re.sub(allowed_char_regex, "", output_file_prefix)
+        if (len(prefix_forbidden_chars) > 0):
+            logging.error("The supplied output file prefix contains forbidden characters (\"{}\")."
+                        " Please refer to the help message for more information. Exiting.\n".format(prefix_forbidden_chars))
             exit(1)
 
     # conversion of input/output file and directory paths (host system -> container)
@@ -165,15 +164,13 @@ def main():
         exit(2)
     if not Path(output_dir_cont_path).is_dir():
         logging.info("The specified output results directory couldn't be located"
-                    " within the container (path \"" + output_dir_cont_path
-                    + "\"). Attempting to create it..")
+                    " within the container (path \"{}\"). Attempting to create it..".format(output_dir_cont_path))
         try:
             Path(output_dir_cont_path).mkdir(parents=False)
         except FileNotFoundError as fnf_error:
             logging.error("Could not create the output directory."
                         " Please make sure that its parent directory already"
-                        " exists. Exiting after the original error message: "
-                        + "\"" + repr(fnf_error) + "\"\n")
+                        " exists. Exiting after the original error message: \"{}\"\n".format(repr(fnf_error)))
             exit(3)
         logging.info("Output directory created.")
 
@@ -216,8 +213,7 @@ def main():
         exit(8)
     if not Path(input_dir_cont_path).is_dir():
         logging.error("The specified input data directory couldn't be located"
-                    " (host system path: \"" + input_dir_hs_path
-                    + "\"). Exiting.")
+                    " (host system path: \"{}\"). Exiting.".format(input_dir_hs_path))
         exit(9)
 
     # determine the output file paths
@@ -255,7 +251,7 @@ def main():
         if ((Path(outfile_log_cont).exists())
             or (Path(outfile_file_path_list_cont).exists())
             or (Path(skipped_file_path_list_cont).exists())):
-            logging.info("(Some of) the target output files already exist and output overwriting has been disabled. Exiting.")
+            logging.warning("(Some of) the target output files already exist and output overwriting has been disabled. Exiting.")
             exit(0)
 
     # save a copy of log messages into a file
@@ -302,14 +298,14 @@ def main():
             line_s = line.strip().split("\t")
             if (len(line_s) < 2):
                 logging.error("All lines of the input ID list file should contain at least two fields/columns."
-                              " The following line has fewer: \"" + line.strip() + "\". Exiting.")
+                              " The following line has fewer: \"{}\". Exiting.".format(line.strip()))
                 exit(10)
 
             if (not header_read):
                 for column_id in id_list_fi:
                     if not (column_id in line_s):
-                        logging.error("Couldn't find the required \""
-                                      + column_id + "\" data field in the supplied ID list. Exiting.")
+                        logging.error("Couldn't find the required \"{}\" data field in the supplied ID list."
+                                      " Exiting.".format(column_id))
                         exit(18)
                     id_list_fi[column_id] = line_s.index(column_id)
                 header_read = True
@@ -321,11 +317,11 @@ def main():
                     if (matching_method == "prefix"):
                         ID_prefix_list.append(ID_string)
                     else:
-                        logging.warning(" - Unsupported ID matching method keyword encountered"
-                                        " (method keyword: \"" + matching_method + "\", ID: \"" + ID_string + "\"). The ID will be ignored.")
+                        logging.warning(" - Unsupported ID matching method encountered"
+                                        " (matching method: \"{}\", ID: \"{}\"). The ID will be ignored.".format(matching_method, ID_string))
                 elif(ID_string == ""):
-                    logging.warning(" - Unsupported ID string (encountered ID value: \"" + ID_string + "\"). The ID will be ignored.")
-    logging.info(" - ID loading done (" + str(len(ID_prefix_list)) + " IDs loaded).")
+                    logging.warning(" - Unsupported ID string (encountered ID value: \"{}\"). The ID will be ignored.".format(ID_string))
+    logging.info(" - ID loading done ({} IDs loaded).".format(len(ID_prefix_list)))
 
     # load the extraction path patterns
     extraction_path_patterns_file = "/inpred/resources/data/extraction_path_patterns.tsv"
@@ -364,8 +360,8 @@ def main():
             line_s = line.strip().split("\t")
 
             if (len(line_s) < 4):
-                logging.error("Too few columns on the following extraction path pattern file line: \""
-                            + line.strip() + "\". Exiting.")
+                logging.error("Too few columns on the following extraction path pattern file line: \"{}\"."
+                              " Exiting.".format(line.strip()))
                 exit(11)
 
             required_input_type = line_s[0]
@@ -374,8 +370,8 @@ def main():
             path_pattern = line_s[3]
 
             if (pattern_category not in extraction_patterns):
-                logging.error("Unknown pattern category on the following extraction path pattern file line: \""
-                            + line.strip() + "\". Exiting.")
+                logging.error("Unknown pattern category on the following extraction path pattern file line: \"{}\"."
+                              " Exiting.".format(line.strip()))
                 exit(12)
             
             if (required_input_type == input_type):
@@ -394,8 +390,8 @@ def main():
             if (ECO_stdout_line_list == ['']):
                 logging.info("Found zero error lines in the LocalApp logs.")
             else:
-                logging.info("Found " + str(len(ECO_stdout_line_list)) + " error lines in the LocalApp logs." 
-                            " A copy of the error lines will be written into the inherited errors output file.")
+                logging.warning("Found {} error lines in the LocalApp logs." 
+                                " A copy of the error lines will be written into the inherited errors output file.".format(len(ECO_stdout_line_list)))
                 with open(inherited_error_list_cont, "w") as iel_outfile:
                     for error_line in ECO_stdout_line_list:
                         iel_outfile.write(error_line + "\n")
@@ -456,8 +452,7 @@ def main():
                 elif ((data_section) and (not header_read)):
                     for column_id in sample_sheet_data_fi:
                         if not (column_id in line_s):
-                            logging.error("Couldn't find the required \""
-                                        + column_id + "\" data field in the processed sample sheet file. Exiting.")
+                            logging.error("Couldn't find the required \"{}\" data field in the processed sample sheet file. Exiting.".format(column_id))
                             exit(15)
                         else:
                             sample_sheet_data_fi[column_id] = line_s.index(column_id)
@@ -472,20 +467,20 @@ def main():
                     # check whether the encountered sample IDs match any items on the input ID list
                     matching_ids = TSF.find_ID_match(sv_sample_id, ID_prefix_list, "prefix")
                     if (len(matching_ids) == 0):
-                        logging.info("Skipping " + sv_sample_type + " sample \"" + sv_sample_id + "\" (no ID match).")
+                        logging.info("Skipping {} sample \"{}\" (no ID match).".format(sv_sample_type, sv_sample_id))
                     else:
                         # check compliance with the InPreD nomenclature, if enabled
                         if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sv_sample_id))):
-                            logging.warning("The following sample ID doesn't comply with"
-                                            " the InPreD ID nomenclature: \"" + sv_sample_id + "\". The sample will be ignored.")
+                            logging.info("The following sample ID doesn't comply with"
+                                            " the InPreD ID nomenclature: \"{}\". The sample will be ignored.".format(sv_sample_id))
                         else:
                             if (sv_sample_type == "DNA"):
                                 DNA_sample_list[sv_sample_id] = {"pair_id": sv_pair_id, "pattern": matching_ids[0]}
                             elif (sv_sample_type == "RNA"):
                                 RNA_sample_list[sv_sample_id] = {"pair_id": sv_pair_id, "pattern": matching_ids[0]}
                             else:
-                                logging.error("Unknown sample type encountered (sample ID: \""
-                                            + sv_sample_id + "\", sample type: \"" + sv_sample_type + "\"). Exiting.")
+                                logging.error("Unknown sample type encountered (sample ID: \"{}\", sample type: \"{}\")."
+                                              " Exiting.".format(sv_sample_id, sv_sample_type))
                                 exit(16)
 
         # print summary information about the processed sample sheet
@@ -493,7 +488,7 @@ def main():
             logging.error("Sample sheet version not identified, no sample information extracted. Exiting.")
             exit(17)
         elif ((len(DNA_sample_list) + len(RNA_sample_list)) == 0):
-            logging.info("No samples suitable for extraction were identified within the processed sample sheet. Exiting.")
+            logging.warning("No samples suitable for extraction were identified within the processed sample sheet. Exiting.")
             exit(0)
         else:
             # sample sheet version info
@@ -502,13 +497,13 @@ def main():
             elif (data_tag == "[TSO500S_Data]"):
                 logging.info("Sample sheet version v2 detected.")
             # DNA sample info
-            logging.info(str(len(DNA_sample_list)) + " DNA samples with an ID match identified (sample ID [pair_ID] //matching_pattern):")
+            logging.info("{} DNA samples with an ID match identified (sample ID [pair_ID] //matching_pattern):".format(len(DNA_sample_list)))
             for sample_id in DNA_sample_list:
-                logging.info("  - \"" + sample_id + "\" [\"" + DNA_sample_list[sample_id]["pair_id"] + "\"] //\"" + DNA_sample_list[sample_id]["pattern"] + "\"")
+                logging.info("  - \"{}\" [\"{}\"] //\"{}\"".format(sample_id, DNA_sample_list[sample_id]["pair_id"], DNA_sample_list[sample_id]["pattern"]))
             # RNA sample info
-            logging.info(str(len(RNA_sample_list)) + " RNA samples with an ID match identified (sample ID [pair_ID] //matching_pattern):")
+            logging.info("{} RNA samples with an ID match identified (sample ID [pair_ID] //matching_pattern):".format(len(RNA_sample_list)))
             for sample_id in RNA_sample_list:
-                logging.info("  - \"" + sample_id + "\" [\"" + RNA_sample_list[sample_id]["pair_id"] + "\"] //\"" + RNA_sample_list[sample_id]["pattern"] + "\"")
+                logging.info("  - \"{}\" [\"{}\"] //\"{}\"".format(sample_id, RNA_sample_list[sample_id]["pair_id"], RNA_sample_list[sample_id]["pattern"]))
 
         # determine whether the processed LocalApp output directory was generated from BCL files
         from_BCL = False
@@ -615,13 +610,13 @@ def main():
         for L1_path in TSOPPI_L1_paths:
             # only process further directories
             if Path(L1_path).is_dir():
-                logging.info("Checking sub-directory \"" + str(Path(L1_path).name) + "\" for sample extraction eligibility...")
+                logging.info("Checking sub-directory \"{}\" for sample extraction eligibility...".format(str(Path(L1_path).name)))
 
                 # skip directories not containing file "sample_list.tsv"
                 sample_list_file_path = L1_path + "/sample_list.tsv"
 
                 if not Path(sample_list_file_path).is_file():
-                    logging.warning(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
+                    logging.info(" - No \"sample_list.tsv\" file found. The directory will be skipped.")
                     continue
                 
                 logging.info(" - File \"sample_list.tsv\" found, its content will be checked for eligible samples.")
@@ -643,8 +638,7 @@ def main():
                             line_s = line.strip().lstrip("#").split("\t")
                             for column_id in sample_list_fi:
                                 if not (column_id in line_s):
-                                    logging.error("Couldn't find the required \""
-                                                + column_id + "\" data field in the accessed sample list. Exiting.")
+                                    logging.error("Couldn't find the required \"{}\" data field in the accessed sample list. Exiting.".format(column_id))
                                     exit(18)
                                 sample_list_fi[column_id] = line_s.index(column_id)
                             header_read = True
@@ -658,16 +652,16 @@ def main():
                             matching_ids = TSF.find_ID_match(sample_id, ID_prefix_list, "prefix")
 
                             if (len(matching_ids) == 0):
-                                logging.info(" - No ID match for sample sample \"" + sample_id + "\".")
+                                logging.info(" - No ID match for sample sample \"{}\".".format(sample_id))
                             else:
                                 # if enabled, check the InPreD ID nomenclature
                                 if ((require_inpred_nomenclature) and (not TSF.is_InPreD_ID(sample_id))):
-                                    logging.warning(" - The following sample ID doesn't comply with"
-                                                    " the InPreD ID nomenclature: \"" + sample_id + "\". The sample will be ignored.")
+                                    logging.info(" - The following sample ID doesn't comply with"
+                                                    " the InPreD ID nomenclature: \"{}\". The sample will be ignored.".format(sample_id))
                                 else:
                                     # keep track of sample IDs that pass all checks
                                     eligible_sample_dict[sample_type] = sample_id
-                                    logging.info(" - ID match for sample \"" + sample_id + "\" (\"" + matching_ids[0] + "\").")
+                                    logging.info(" - ID match for sample \"{}\" (\"{}\").".format(sample_id, matching_ids[0]))
                 
                 # do not export files from directories that contain any samples not eligible for extraction
                 if (len(eligible_sample_dict) != sample_count):
@@ -753,7 +747,7 @@ def main():
             elif (status_code == "I"):
                 ignored_directory_count += 1
             else:
-                logging.error("Unexpected skip/export status for file path \"" + fp_record + "\" (status code: \"" + status_code + "\"). Exiting.")
+                logging.error("Unexpected skip/export status for file path \"{}\" (status code: \"{}\"). Exiting.".format(fp_record, status_code))
                 exit(20)
 
     # create a bash script that runs tar, gpg and md5sum on files eligible for export
@@ -791,7 +785,7 @@ def main():
             logging.info("Running the data extraction, packaging and ecryption...")
             subprocess.run(["bash", outfile_script_path_cont])
     else:
-        logging.info("No files qualified for extraction. Exiting.")
+        logging.warning("No files qualified for extraction. Exiting.")
         exit(0)
 
 if __name__ == '__main__':
